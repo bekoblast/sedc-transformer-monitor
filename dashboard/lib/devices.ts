@@ -1,7 +1,12 @@
 import type { Device } from './types';
 
-// Three real SEDC sites from the original 2023 production system.
-// Coordinates, capacities, and limits are exactly as deployed.
+// Six SEDC sites across Khartoum metro. The first three are the actual
+// production sites from the 2023 deployment; the other three are realistic
+// Khartoum neighborhoods added for the rebuild demo so the status cards
+// can show every operational state at once (online / warning / alarm / inactive).
+//
+// The `scenario` field is a demo seed — it tells the browser simulator
+// which behavior band to bias toward. The Node-RED simulator uses the same.
 export const DEVICES: Device[] = [
   {
     IMEI: '862506048536646',
@@ -17,7 +22,8 @@ export const DEVICES: Device[] = [
     RP: '1000 KVA',
     rated_kva: 1000,
     I_limit: 700,
-    V2_limit: 420,
+    V2_limit: 440,
+    scenario: 'normal',
   },
   {
     IMEI: '865583041220517',
@@ -33,7 +39,8 @@ export const DEVICES: Device[] = [
     RP: '1000 KVA',
     rated_kva: 1000,
     I_limit: 1100,
-    V2_limit: 400,
+    V2_limit: 440,
+    scenario: 'normal',
   },
   {
     IMEI: '864086061228973',
@@ -48,8 +55,60 @@ export const DEVICES: Device[] = [
     LRA: 2000,
     RP: '1500 KVA',
     rated_kva: 1500,
-    I_limit: 1000,
+    I_limit: 1800,
+    V2_limit: 440,
+    scenario: 'warning',
+  },
+  {
+    IMEI: '862506048536647',
+    name: 'SEDC-004',
+    site_name_en: 'Bahri Industrial Area',
+    site_name_ar: 'الصناعية - بحري',
+    city: 'Khartoum North',
+    address: 'Bahri Industrial Zone, Khartoum North, Sudan',
+    lat: 15.6420,
+    long: 32.5560,
+    LRV: '433 V',
+    LRA: 2000,
+    RP: '1500 KVA',
+    rated_kva: 1500,
+    I_limit: 1500,
+    V2_limit: 420,
+    scenario: 'alarm',
+  },
+  {
+    IMEI: '865583041220518',
+    name: 'SEDC-005',
+    site_name_en: 'Amarat - Khartoum',
+    site_name_ar: 'العمارات - الخرطوم',
+    city: 'Khartoum',
+    address: 'Amarat residential area, Khartoum, Sudan',
+    lat: 15.5780,
+    long: 32.5570,
+    LRV: '433 V',
+    LRA: 2000,
+    RP: '1500 KVA',
+    rated_kva: 1500,
+    I_limit: 1500,
+    V2_limit: 440,
+    scenario: 'normal',
+  },
+  {
+    IMEI: '864086061228974',
+    name: 'SEDC-006',
+    site_name_en: 'Souq Libya - Omdurman',
+    site_name_ar: 'سوق ليبيا - أم درمان',
+    city: 'Omdurman',
+    address: 'Souq Libya commercial district, Omdurman, Sudan',
+    lat: 15.6500,
+    long: 32.4200,
+    LRV: '433 V',
+    LRA: 3333.4,
+    RP: '2500 KVA',
+    rated_kva: 2500,
+    I_limit: 2200,
     V2_limit: 410,
+    scenario: 'inactive',
   },
 ];
 

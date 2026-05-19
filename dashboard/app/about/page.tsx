@@ -85,19 +85,25 @@ export default function AboutPage() {
       {/* What you're looking at */}
       <Section title="What you're looking at">
         <p>
-          A live monitoring dashboard for <strong>3 virtual distribution
-          transformers</strong> at the exact same three Sudan sites that ran in
-          the 2023 production deployment:
+          A live monitoring dashboard for <strong>6 virtual distribution
+          transformers</strong> across the Khartoum metro area. The first
+          three are the actual production sites from the 2023 deployment; the
+          other three are real Khartoum neighborhoods added to demonstrate
+          every operational state at once.
         </p>
         <ul className="list-disc list-inside space-y-1 text-zinc-700">
-          <li><strong>SEDC-001</strong> — Jabra Alsajdeen (Khartoum) · 1000 kVA · I_limit 700 A</li>
-          <li><strong>SEDC-002</strong> — Ombada Alhara 1, Ahmed Altayeb (Omdurman) · 1000 kVA · I_limit 1100 A</li>
-          <li><strong>SEDC-003</strong> — Shambat Square 11, Mohammed Awad Hamza (Khartoum North) · 1500 kVA · I_limit 1000 A</li>
+          <li><strong>SEDC-001</strong> — Jabra Alsajdeen (Khartoum) · 1000 kVA &nbsp;<em className="text-canar-green">· normal</em></li>
+          <li><strong>SEDC-002</strong> — Ombada Alhara 1, Ahmed Altayeb (Omdurman) · 1000 kVA &nbsp;<em className="text-canar-green">· normal</em></li>
+          <li><strong>SEDC-003</strong> — Shambat Square 11, Mohammed Awad Hamza (Khartoum North) · 1500 kVA &nbsp;<em className="text-canar-amber">· high load (warning)</em></li>
+          <li><strong>SEDC-004</strong> — Bahri Industrial Area (Khartoum North) · 1500 kVA &nbsp;<em className="text-canar-red">· overload (alarm)</em></li>
+          <li><strong>SEDC-005</strong> — Amarat (Khartoum) · 1500 kVA &nbsp;<em className="text-canar-green">· normal</em></li>
+          <li><strong>SEDC-006</strong> — Souq Libya (Omdurman) · 2500 kVA &nbsp;<em className="text-canar-gray">· offline (no telemetry)</em></li>
         </ul>
         <p>
           Each transformer emits a fresh telemetry packet every few seconds.
-          The simulator generates realistic per-phase fluctuation, occasional
-          load spikes that trigger overcurrent alarms, and frequency drift
+          The simulator generates realistic per-phase fluctuation, biases each
+          device toward its assigned scenario (normal / warning / alarm /
+          inactive), and frequency drift
           around the nominal 50 Hz — everything the operator would see on a
           live grid.
         </p>

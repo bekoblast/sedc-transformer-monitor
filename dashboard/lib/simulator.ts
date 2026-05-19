@@ -2,11 +2,10 @@
 // voltage / current / power readings matching the SEDC energy meter
 // data shape (24-field JSON array in the original Node-RED flow).
 
-import type { Device, TransformerUpdate } from './types';
+import type { Device, TransformerUpdate, Scenario } from './types';
 
 type TransformerState = {
   loadFactor: number;
-  loadTrend: number;
   tick: number;
   baseFreq: number;
   netE: number;
@@ -14,28 +13,38 @@ type TransformerState = {
 
 const states = new Map<string, TransformerState>();
 
-function initState(): TransformerState {
+// Per-scenario tuning. These bands are tuned so that:
+//  - 'normal'   never trips current or voltage alarms (load_percent ~40-55%)
+//  - 'warning'  exceeds the 70% load threshold but stays below all alarm limits
+//  - 'alarm'    intentionally overloads the transformer so I and V alarms fire
+//  - 'inactive' is emitted with a stale timestamp so getStatus() reports inactive
+const SCENARIO_LOAD: Record<Scenario, { target: number; jitter: number }> = {
+  normal: { target: 0.48, jitter: 0.06 },
+  warning: { target: 0.80, jitter: 0.04 },
+  alarm: { target: 1.08, jitter: 0.06 },
+  inactive: { target: 0.50, jitter: 0.05 },
+};
+
+function initState(device: Device): TransformerState {
+  const sc = device.scenario || 'normal';
+  const { target, jitter } = SCENARIO_LOAD[sc];
   return {
-    loadFactor: 0.45 + Math.random() * 0.4,
-    loadTrend: (Math.random() - 0.5) * 0.005,
+    loadFactor: target + (Math.random() - 0.5) * jitter,
     tick: 0,
     baseFreq: 50,
     netE: 100_000 + Math.random() * 500_000,
   };
 }
 
-function evolve(state: TransformerState): TransformerState {
+function evolve(state: TransformerState, device: Device): TransformerState {
   state.tick++;
+  const sc = device.scenario || 'normal';
+  const { target, jitter } = SCENARIO_LOAD[sc];
 
-  state.loadTrend += (Math.random() - 0.5) * 0.002;
-  state.loadTrend = Math.max(-0.01, Math.min(0.01, state.loadTrend));
-  state.loadFactor += state.loadTrend;
-  state.loadFactor += (0.6 - state.loadFactor) * 0.02;
-  state.loadFactor = Math.max(0.2, Math.min(1.05, state.loadFactor));
-
-  if (Math.random() < 0.01) {
-    state.loadFactor = Math.min(1.18, state.loadFactor + 0.2);
-  }
+  // Mean-revert quickly to the scenario's target band so the dashboard
+  // never accidentally flips a "normal" device into alarm and vice-versa.
+  state.loadFactor += (target - state.loadFactor) * 0.15;
+  state.loadFactor += (Math.random() - 0.5) * jitter * 0.5;
 
   return state;
 }
@@ -43,10 +52,10 @@ function evolve(state: TransformerState): TransformerState {
 export function generateUpdate(device: Device): TransformerUpdate {
   let state = states.get(device.IMEI);
   if (!state) {
-    state = initState();
+    state = initState(device);
     states.set(device.IMEI, state);
   }
-  state = evolve(state);
+  state = evolve(state, device);
 
   const ratedV_LL = parseFloat(device.LRV);
   const ratedV_LN = ratedV_LL / Math.sqrt(3);
@@ -56,14 +65,18 @@ export function generateUpdate(device: Device): TransformerUpdate {
 
   const imb = () => 1 + (Math.random() - 0.5) * 0.05;
 
-  const V_A = ratedV_LN * (0.96 + Math.random() * 0.07) * imb();
-  const V_B = ratedV_LN * (0.96 + Math.random() * 0.07) * imb();
-  const V_C = ratedV_LN * (0.96 + Math.random() * 0.07) * imb();
+  // Voltage bias per scenario: normal sites run slightly under nominal so
+  // V_AB stays clear of V2_limit; the alarm scenario pushes voltage up so
+  // V_AB reliably exceeds V2_limit (alongside the overcurrent alarm).
+  const vBias = device.scenario === 'alarm' ? 0.97 : 0.93;
+  const V_A = ratedV_LN * (vBias + Math.random() * 0.04) * imb();
+  const V_B = ratedV_LN * (vBias + Math.random() * 0.04) * imb();
+  const V_C = ratedV_LN * (vBias + Math.random() * 0.04) * imb();
 
-  const overshoot = state.loadFactor > 1.0 ? 1.04 : 1.0;
-  const V_AB = V_A * Math.sqrt(3) * imb() * overshoot;
-  const V_BC = V_B * Math.sqrt(3) * imb() * overshoot;
-  const V_AC = V_C * Math.sqrt(3) * imb() * overshoot;
+  // Line-line is deterministic from line-neutral in a balanced 3-phase system.
+  const V_AB = V_A * Math.sqrt(3);
+  const V_BC = V_B * Math.sqrt(3);
+  const V_AC = V_C * Math.sqrt(3);
 
   const I_A = ratedI * load * imb();
   const I_B = ratedI * load * imb();
@@ -118,9 +131,15 @@ export function generateUpdate(device: Device): TransformerUpdate {
   const r = (n: number) => Math.round(n * 100) / 100;
   const r4 = (n: number) => Math.round(n * 10000) / 10000;
 
+  // For the inactive scenario, emit a stale timestamp so getStatus() sees
+  // age > 60s and reports the device as offline (no fresh telemetry).
+  const ts = device.scenario === 'inactive'
+    ? new Date(now.getTime() - 120_000)
+    : now;
+
   return {
     type: 'transformer_update',
-    timestamp: now.toISOString(),
+    timestamp: ts.toISOString(),
     imei: parseInt(device.IMEI, 10),
     device: device.name,
     site: {

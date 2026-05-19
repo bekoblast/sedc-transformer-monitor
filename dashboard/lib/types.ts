@@ -70,7 +70,13 @@ export type Device = {
   rated_kva: number;
   I_limit: number;
   V2_limit: number;
+  // Demo scenario seed for the browser simulator. Determines whether this
+  // transformer behaves as a normal site, a warning site (high load), an
+  // alarm site (overcurrent), or an inactive site (stale telemetry).
+  scenario?: 'normal' | 'warning' | 'alarm' | 'inactive';
 };
+
+export type Scenario = NonNullable<Device['scenario']>;
 
 export type TransformerStatus = 'ok' | 'warning' | 'critical' | 'inactive';
 
@@ -79,7 +85,7 @@ export function getStatus(update: TransformerUpdate | undefined): TransformerSta
   const ageMs = Date.now() - new Date(update.timestamp).getTime();
   if (ageMs > 60_000) return 'inactive';
   if (update.alarms.any) return 'critical';
-  if (update.reading.load_percent > 85) return 'warning';
+  if (update.reading.load_percent > 70) return 'warning';
   return 'ok';
 }
 

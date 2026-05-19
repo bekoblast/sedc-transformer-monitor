@@ -72,13 +72,24 @@ The dashboard always works on its own (browser simulator). When Node-RED is runn
 
 ---
 
-## The 3 sites (faithful to the 2023 deployment)
+## The 6 sites (3 original production + 3 added for the demo)
 
-| ID | Site (EN) | City | Rated | I_limit | V2_limit |
-|----|-----------|------|------:|--------:|---------:|
-| **SEDC-001** | Jabra Alsajdeen | Khartoum | 1000 kVA | 700 A | 420 V |
-| **SEDC-002** | Ombada Alhara 1 (Ahmed Altayeb) | Omdurman | 1000 kVA | 1100 A | 400 V |
-| **SEDC-003** | Shambat Square 11 (Mohammed Awad Hamza) | Khartoum North | 1500 kVA | 1000 A | 410 V |
+The first three sites are the actual production deployment from 2023. The
+other three are real Khartoum neighborhoods added for the rebuild demo so
+the status cards on the overview page can show every operational state at
+once. Each device has a `scenario` field that biases the simulator toward
+that demo state.
+
+| ID | Site (EN) | City | Rated | I_limit | V2_limit | Scenario |
+|----|-----------|------|------:|--------:|---------:|----------|
+| **SEDC-001** | Jabra Alsajdeen | Khartoum | 1000 kVA | 700 A | 440 V | `normal` |
+| **SEDC-002** | Ombada Alhara 1 (Ahmed Altayeb) | Omdurman | 1000 kVA | 1100 A | 440 V | `normal` |
+| **SEDC-003** | Shambat Square 11 (Mohammed Awad Hamza) | Khartoum North | 1500 kVA | 1800 A | 440 V | `warning` |
+| **SEDC-004** | Bahri Industrial Area | Khartoum North | 1500 kVA | 1500 A | 420 V | `alarm` |
+| **SEDC-005** | Amarat | Khartoum | 1500 kVA | 1500 A | 440 V | `normal` |
+| **SEDC-006** | Souq Libya | Omdurman | 2500 kVA | 2200 A | 410 V | `inactive` |
+
+Expected status-card breakdown: **Total 6 · Online 3 · Inactive 1 · Warning 1 · Alarms 1**
 
 ---
 
