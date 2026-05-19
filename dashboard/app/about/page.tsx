@@ -301,7 +301,7 @@ DATA[21..23] = VAngle_AB, VAngle_BC, VAngle_AC   (degrees)`}
         <div className="flex flex-wrap gap-3 pt-2 not-prose">
           <ContactLink href="mailto:beko1986@gmail.com" icon={<Mail className="size-4" />} label="beko1986@gmail.com" />
           <ContactLink href="https://beko-cloud.work" icon={<Globe className="size-4" />} label="beko-cloud.work" />
-          <ContactLink href="https://github.com/bekoblast/SEDC-Transformers-Monitor" icon={<Code className="size-4" />} label="Source on GitHub" />
+          <ContactLink href="https://github.com/bekoblast/sedc-transformer-monitor" icon={<Code className="size-4" />} label="Source on GitHub" />
         </div>
       </Section>
 
